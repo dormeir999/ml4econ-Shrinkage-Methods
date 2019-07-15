@@ -1,8 +1,11 @@
 ---
-title: "lab3_named_lab6 â Shrinkage Methods"
-output:
-  html_document: default
-  pdf_document: default
+title: "ml4econ Shrinkage Methods"
+author: "Dor Meir"
+date: "may 7 2019"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
