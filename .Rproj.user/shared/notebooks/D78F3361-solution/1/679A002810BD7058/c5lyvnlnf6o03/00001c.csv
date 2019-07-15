@@ -1,0 +1,6 @@
+"0","print(""Elastic Lasso:"")"
+"1","[1]"
+"1"," ""Elastic Lasso:"""
+"1","
+"
+"0","plot(glmnet(matrix2,dat2$Income,alpha=0.9))"

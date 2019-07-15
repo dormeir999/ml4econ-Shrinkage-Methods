@@ -1,0 +1,8 @@
+"0","index <- sample(x=1:nrow(matrix2), size=.3*nrow(matrix2))"
+"0","test <- matrix2[index,]"
+"0","train <- matrix2[-index,]"
+"0","test_pred <- test[c(""Limit"",""Rating"",""Cards"",""Age"",""Education"",""Balance"")] #predictors only"
+"0","train_pred <- train[c(""Limit"",""Rating"",""Cards"",""Age"",""Education"",""Balance"")] #predictors only"
+"0","test_income <- test$Income #true test classification"
+"2","Error in test$Income : $ operator is invalid for atomic vectors
+"

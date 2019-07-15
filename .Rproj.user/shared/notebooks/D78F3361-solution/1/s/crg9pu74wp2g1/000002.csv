@@ -1,0 +1,1 @@
+"0","elastic_lasso=glmnet(matrix2,dat2$Income,alpha=0.9)"

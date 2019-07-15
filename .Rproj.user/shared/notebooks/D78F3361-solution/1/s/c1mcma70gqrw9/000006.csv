@@ -1,0 +1,7 @@
+"0","index <- sample(x=1:nrow(dat2), size=.3*nrow(dat))"
+"0","test <- dat[index,]"
+"0","train <- dat[-index,]"
+"0","test_pred <- test[c(""Limit"",""Rating"",""Cards"",""Age"",""Education"",""Balance"")] #predictors only"
+"0","train_pred <- train[c(""Limit"",""Rating"",""Cards"",""Age"",""Education"",""Balance"")] #predictors only"
+"0","test_income <- test$Income #true test classification"
+"0","train_income <- train$Income #true train classification"

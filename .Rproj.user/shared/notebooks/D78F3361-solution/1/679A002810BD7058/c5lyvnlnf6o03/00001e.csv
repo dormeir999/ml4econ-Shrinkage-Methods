@@ -1,0 +1,6 @@
+"0","print(""Elastic Ridge:"")"
+"1","[1]"
+"1"," ""Elastic Ridge:"""
+"1","
+"
+"0","plot(glmnet(matrix2,dat2$Income,alpha=0.01))"

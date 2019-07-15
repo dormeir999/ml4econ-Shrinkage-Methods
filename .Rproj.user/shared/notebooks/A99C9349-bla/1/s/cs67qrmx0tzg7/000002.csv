@@ -1,0 +1,22 @@
+"0","install.packages(""ISLR"", repos = ""http://cran.us.r-project.org"")"
+"2","Installing package into ‘C:/Users/Dor Meir/Documents/R/win-library/3.5’
+(as ‘lib’ is unspecified)
+"
+"2","trying URL 'http://cran.us.r-project.org/bin/windows/contrib/3.5/ISLR_1.2.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 2923755 bytes (2.8 MB)
+"
+"2","downloaded 2.8 MB
+
+"
+"1","package â€˜ISLRâ€™ successfully unpacked and MD5 sums checked
+"
+"1","
+"
+"1","The downloaded binary packages are in
+	C:\Users\Dor Meir\AppData\Local\Temp\RtmpYVK1Fw\downloaded_packages"
+"1","
+"
+"0","#install.packages(""forecast"",repos = ""http://cran.us.r-project.org"")"
+"0","library(ISLR)"

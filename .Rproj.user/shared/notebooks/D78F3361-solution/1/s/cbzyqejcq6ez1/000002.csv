@@ -1,0 +1,1 @@
+"0","ridge=glmnet(matrix2,dat2$Income,alpha=0)"

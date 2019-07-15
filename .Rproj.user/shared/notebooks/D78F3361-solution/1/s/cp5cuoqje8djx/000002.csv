@@ -1,0 +1,1 @@
+"0","lasso=glmnet(matrix2,dat2$Income,alpha=1)"

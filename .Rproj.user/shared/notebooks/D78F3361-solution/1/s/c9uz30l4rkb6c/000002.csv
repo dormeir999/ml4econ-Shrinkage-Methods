@@ -1,0 +1,8 @@
+"0","colnames(dat[,sapply(dat,class)==""factor""])"
+"1","[1]"
+"1"," ""Gender""   "
+"1"," ""Student""  "
+"1"," ""Married""  "
+"1"," ""Ethnicity"""
+"1","
+"

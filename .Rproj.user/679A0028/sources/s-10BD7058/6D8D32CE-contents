@@ -1,0 +1,142 @@
+---
+title: "lab3_named_lab6 – Shrinkage Methods"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Part 1: Explore glmnet
+
+1. Install package and import library "glmnet" for shrinkage method functions. 
+```{r echo=TRUE}
+install.packages("glmnet", repos = "http://cran.us.r-project.org")
+library("glmnet")
+```
+2. We will use the Credit dataset. Load it from folder N, view it...
+```{r echo=TRUE}
+install.packages("ISLR", repos = "http://cran.us.r-project.org")
+library(ISLR)
+dat<-Credit
+#View(dat)
+summary(dat)
+```
+...and check for NA's and irrelevant variables:
+```{r echo=TRUE}
+length(which(is.na(dat)))
+```
+--> There are no missing values (0 length vector of missing values)
+
+3. Prepare data: glmnet accepts data in matrix form, with quantitative variables only, and no missing values. Use model.matrix() to prepare the data for modelling. We will be predicting Income using all available predictors, therefore our formula will be Income~. . *hint: notice model.matrix() creates an intercept column. Get rid of this column before modelling.
+
+find non-quantitative variables:
+```{r echo=TRUE}
+colnames(dat[,sapply(dat,class)=="factor"])
+```
+create dat2 with no non-quantitative variables (and without ID which is irrelevant):
+```{r echo=TRUE}
+keepList<-c(lapply(dat,class)!="factor")
+keepList["ID"]=FALSE
+dat2 <- dat[,keepList]
+colnames(dat2)
+```
+Use model.matrix() to prepare the data for modelling, remove intercept:
+```{r echo=TRUE}
+matrix=model.matrix(Income ~ Limit+Rating+Cards+Age+Education+Balance, dat2)
+colnames(matrix)
+matrix2<-matrix[,2:7]
+colnames(matrix2)
+```
+4. Run lasso, ridge, and elastic net models. Define each model by a name that specifies the model type.
+*Run two elastic net models for two different alphas. Choose an alpha close to zero, and a second alpha closer to 1.
+
+### Lasso
+```{r echo=TRUE}
+lasso=glmnet(matrix2,dat2$Income,alpha=1)
+```
+
+### Ridge 
+```{r echo=TRUE}
+ridge=glmnet(matrix2,dat2$Income,alpha=0)
+```
+
+### Elastic: close to ridge alpha
+```{r echo=TRUE}
+elastic_ridge=glmnet(matrix2,dat2$Income,alpha=0.01)
+```
+
+### Elastic: close to lasso alpha
+```{r echo=TRUE}
+elastic_lasso=glmnet(matrix2,dat2$Income,alpha=0.9)
+```
+
+5. Use coef(model) to view the coefficients across the lambdas for the different models. What happens to the coefficients as lambda gets smaller? How does this differ for the different methods?
+```{r echo=TRUE}
+print("Lasso:")
+plot(glmnet(matrix2,dat2$Income,alpha=1))
+print("Elastic Lasso:")
+plot(glmnet(matrix2,dat2$Income,alpha=0.9))
+print("Elastic Ridge:")
+plot(glmnet(matrix2,dat2$Income,alpha=0.01))
+print("Ridge:")
+plot(glmnet(matrix2,dat2$Income,alpha=0))
+```
+
+As lambda gets smaller, the coefficients gets smaller,
+but while the trend in Lasso and "Elastic Lasso" is more monotonic,
+the trend in the "Elastic Ridge" and Ridge model in less monotonic,
+and for some variables has a downward trend from some point.
+
+6. Use model$df to check how many non-zero coefficients for each lambda for the different methods.
+```{r echo=TRUE}
+print('Lasso: The number of non-zero coefficients:')
+sum(lasso$df!="0")
+print('Lasso: The coefficients for each lambda:')
+lasso[c("df","lambda")]
+print('Elastic Lasso: The number of non-zero coefficients:')
+sum(elastic_lasso$df!="0")
+print('Elastic Lasso: The coefficients for each lambda:')
+elastic_lasso[c("df","lambda")]
+print('Elastic Ridge:The coefficients for each lambda:')
+elastic_ridge[c("df","lambda")]
+print('Elastic Ridge: The coefficients for each lambda:')
+elastic_ridge[c("df","lambda")]
+print('Ridge:The coefficients for each lambda:')
+ridge[c("df","lambda")]
+print('Ridge: The coefficients for each lambda:')
+ridge[c("df","lambda")]
+```
+7. Use plot(model) to view a plot of the coefficients as a function of lambda.
+```{r echo=TRUE}
+plot(lasso)
+plot(elastic_lasso)
+plot(elastic_ridge)
+plot(ridge)
+```
+
+## Part 2: Cross validate and test
+
+1. Split into train and test sets. Remember, we need 4 sets of data: train predictors, test predictors, train response, test response.
+```{r echo=TRUE}
+index <- sample(x=1:nrow(matrix2), size=.3*nrow(matrix2))
+test <- matrix2[index,]
+train <- matrix2[-index,]
+test_pred <- test[c("Limit","Rating","Cards","Age","Education","Balance")] #predictors only
+train_pred <- train[c("Limit","Rating","Cards","Age","Education","Balance")] #predictors only
+test_income <- test$Income #true test classification
+train_income <- train$Income #true train classification
+```
+2. Run ridge and lasso models on the training set and response using cv.glmnet with your choice of CV folds.
+
+### Lasso
+```{r echo=TRUE}
+#lasso=glmnet(matrix2,dat2$Income,alpha=1)
+```
+
+### Ridge 
+```{r echo=TRUE}
+#ridge=glmnet(matrix2,dat2$Income,alpha=0)
+```

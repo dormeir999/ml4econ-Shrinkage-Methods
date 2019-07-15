@@ -1,0 +1,26 @@
+"0","install.packages(""glmnet"", repos = ""http://cran.us.r-project.org"")"
+"2","Installing package into ‘C:/Users/Dor Meir/Documents/R/win-library/3.5’
+(as ‘lib’ is unspecified)
+"
+"2","Content type 'application/zip'"
+"2"," length 1817537 bytes (1.7 MB)
+"
+"2","downloaded 1.7 MB
+
+"
+"1","package â€˜glmnetâ€™ successfully unpacked and MD5 sums checked
+"
+"1","
+"
+"1","The downloaded binary packages are in
+	C:\Users\Dor Meir\AppData\Local\Temp\Rtmpwz4q9B\downloaded_packages"
+"1","
+"
+"0","library(""glmnet"")"
+"2","Loading required package: Matrix
+"
+"2","Loading required package: foreach
+"
+"2","Loaded glmnet 2.0-16
+
+"

@@ -1,0 +1,256 @@
+---
+title: "lab3_named_lab6 â Shrinkage Methods"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Part 1: Explore glmnet
+
+1. Install package and import library "glmnet" for shrinkage method functions. 
+```{r echo=TRUE}
+#install.packages("glmnet", repos = "http://cran.us.r-project.org")
+library("glmnet")
+```
+2. We will use the Credit dataset. Load it from folder N, view it...
+```{r echo=TRUE}
+#install.packages("ISLR", repos = "http://cran.us.r-project.org")
+library(ISLR)
+dat<-Credit
+attach(dat)
+#View(dat)
+#summary(dat)
+str(dat)
+```
+
+...and check for NA's and irrelevant variables:
+```{r echo=TRUE}
+length(which(is.na(dat)))
+```
+--> There are no missing values (0 length vector of missing values)
+
+3. Prepare data: glmnet accepts data in matrix form, with quantitative variables only, and no missing values. Use model.matrix() to prepare the data for modelling. We will be predicting Income using all available predictors, therefore our formula will be Income~. . *hint: notice model.matrix() creates an intercept column. Get rid of this column before modelling.
+
+find non-quantitative variables:
+```{r echo=TRUE}
+colnames(dat[,sapply(dat,class)=="factor"])
+```
+create dat2 with no non-quantitative variables (and without ID which is irrelevant):
+```{r echo=TRUE}
+dat1 <- model.matrix(Income~., data = dat)
+dat1 <- dat1[,-1]
+head(dat1)
+```
+
+
+4. Run lasso, ridge, and elastic net models. Define each model by a name that specifies the model type.
+*Run two elastic net models for two different alphas. Choose an alpha close to zero, and a second alpha closer to 1.
+
+The predicted variable y and the standardized predictors x:
+```{r echo=TRUE}
+y <- dat1[Income]
+x <- scale(dat1[,-Income])
+```
+
+
+### Lasso
+```{r echo=TRUE}
+lasso <- glmnet(x,y,alpha=1)
+```
+
+### Ridge 
+```{r echo=TRUE}
+ridge <- glmnet(x,y,alpha=0)
+```
+
+### Elastic: close to ridge alpha
+```{r echo=TRUE}
+elastic_net1 <- glmnet(x,y,alpha=0.01)
+```
+
+### Elastic: close to lasso alpha
+```{r echo=TRUE}
+elastic_net2 <- glmnet(x,y,alpha=0.9)
+```
+
+5. Use coef(model) to view the coefficients across the lambdas for the different models. What happens to the coefficients as lambda gets smaller? How does this differ for the different methods?
+
+I'll plot the coeffiecient to log lambda (in the top axis is the number of non-zero coefficients):
+
+```{r echo=TRUE}
+print("Lasso:")
+plot(lasso,xvar="lambda",label=TRUE)
+print("Ridge:")
+plot(ridge,xvar="lambda",label=TRUE)
+print("Elastic net 1:")
+plot(elastic_net1,xvar="lambda",label=TRUE)
+print("Elastic net 2:")
+plot(elastic_net2,xvar="lambda",label=TRUE)
+
+```
+
+As lambda gets smaller, the coefficients gets bigger,
+but while the ridge and elastic with alpha=0.1 models are monotonic and smooth,
+the Lasso and elastic with alpha=0.9 models are not all monotonic nor smooth,
+and for some variables has a downward trend from some point.
+It is also clear that the Lasso model all coeffeficients zero out, while in Ridge model non of the coefficients zero out. This is because the Lasso restriction is comprised of absolute value which makes sharpe edges while the Ridge restriction is comprised of quadratic values, which makes smooth round-ish edges.
+6. Use model$df to check how many non-zero coefficients for each lambda for the different methods.
+
+```{r echo=TRUE}
+plot(lasso$lambda,lasso$df)
+plot(ridge$lambda,ridge$df)
+plot(elastic_net1$lambda,elastic_net1$df)
+plot(elastic_net2$lambda,elastic_net2$df)
+```
+7. Use plot(model) to view a plot of the coefficients as a function of lambda.
+--> see section 5
+
+## Part 2: Cross validate and test
+
+1. Split into train and test sets. Remember, we need 4 sets of data: train predictors, test predictors, train response, test response.
+```{r echo=TRUE}
+index <- sample(x=1:nrow(x), size=.25*nrow(x))
+test_x <- x[index,]
+train_x <- x[-index,]
+test_y <- y[index]
+train_y <- y[-index]
+```
+2. Run ridge and lasso models on the training set and response using cv.glmnet with your choice of CV folds (I choose 5).
+```{r echo=TRUE}
+ridge_cv <- cv.glmnet(train_x, train_y, alpha = 0, nfolds = 5)
+lasso_cv <- cv.glmnet(train_x, train_y, alpha = 1, nfolds = 5)
+```
+
+
+3. Use model$lambda.min to extract lambda that minimizes cross validation error.
+```{r echo=TRUE}
+ridge_cv$lambda.min
+lasso_cv$lambda.min
+```
+
+
+4. Plot both models - plot(model).
+Ridge CV:
+```{r echo=TRUE}
+plot(ridge_cv)
+```
+Lasso CV:
+```{r echo=TRUE}
+plot(lasso_cv)
+```
+
+5. Predict response variable for test set using lambdas from question 3.
+```{r echo=TRUE}
+y_hat_ridge <- predict(ridge_cv, s = ridge_cv$lambda.min, newx = test_x)
+y_hat_lasso <- predict(lasso_cv, s = lasso_cv$lambda.min, newx = test_x)
+```
+
+6. Calculate test MSE. Which method predicts better?
+```{r echo=TRUE}
+ridge_MSE <-mean((y_hat_ridge-test_y)^2)
+lasso_MSE <-mean((y_hat_lasso-test_y)^2)
+```
+It turned out the ridge model has a smaller MSE and so supposdley better predictions, but as we plot them together we can see they make quite similar predictions:
+```{r echo=TRUE}
+plot(y_hat_lasso,y_hat_ridge)
+abline(0,1,lwd=2)
+```
+And as we plot them with the real values, we can how similair both models are in their predictions:
+```{r echo=TRUE}
+library(lattice)
+xyplot(y_hat_lasso + y_hat_ridge ~ test_y, ,auto.key = list(points = FALSE,lines = TRUE))
+```
+
+
+
+
+## Part 3: Explore PCR
+
+In this exercise we will predict wine quality using different chemical aspects of the wine using the Wine data set.
+1. Load Wine data - View data and variable classes.
+(I changed the file type to csv)
+```{r echo=TRUE}
+wine_df <- read.csv('winequality.csv')
+attach(wine_df)
+str(wine_df)
+```
+
+Is the data ready for modeling?
+I'll check for missing values, recode color as a dummy and scale the data:
+```{r echo=TRUE}
+wine_df[!complete.cases(wine_df),]
+wine_df$color <- ifelse(wine_df$color=='red', 1,0)
+wine_df <- as.data.frame(scale(wine_df))
+```
+
+
+2. Run PCR without cross validation. Choose number of PCs (I'll chose 10 components).
+```{r echo=TRUE}
+library(pls)
+require(pls)
+pcr <- pcr(formula = quality ~ ., data = wine_df, scale = FALSE, ncomp = 10, validation = "none")
+```
+
+
+3. View output of PCR (use summary)
+```{r echo=TRUE}
+summary(pcr)
+```
+
+As we can see, the percent of variance explained increases with the number of components, as in the 7th components it reaches almost 90%.
+
+4. Explore output options. View PCR scores and coefficients.
+I'll use a Matrix to see the PCR coeffcieints for each component, and plot the pcr results:
+
+```{r echo=TRUE}
+matrix(pcr$coefficients, 12, 10, dimnames = list(names(wine_df)[-13]))
+plot(pcr)
+```
+
+## Part 4: Cross Validate and Test
+
+1. Create test and train sets. Unlike other machine learning functions, PCR is under a regression setting and needs a train set which includes the response variable. The test set, however, needs to be split into predictors and response sets.
+```{r echo=TRUE}
+set.seed(1234)
+index <- sample(1:nrow(wine_df), size=.2*nrow(wine_df))
+wine_train <- wine_df[-index,]
+wine_test <- wine_df[index,]
+wine_test_y <- wine_test$quality
+wine_test_x <- wine_test[,-13]
+```
+
+2. Run PCR with cross validation.
+```{r echo=TRUE}
+pcr_cv <- pcr(formula = quality ~ ., data = wine_train, scale = FALSE, validation = "CV")
+```
+
+3. Use summary to view PCR output -> what is the optimal number of principal components?
+```{r echo=TRUE}
+summary(pcr_cv)
+```
+The optimal number of principal components is probably : 96.64 percent of the variation is explained (and The key idea is that often a small number of principal
+components needed to explain most of the variability in the
+data), while the CV estimator is 0.8360
+
+4. Show output in a plot using validationplot() function -> can you tell what the optimal number of principal components is?
+```{r echo=TRUE}
+validationplot(pcr_cv)
+```
+8 components explained 94% of variablity and can also be used as the optimal numberm though, though 9 components explain more without a big chance in the error.
+
+
+5. Calculate test MSE for the optimal PC's as well as the last PC.
+```{r echo=TRUE}
+pcr_all <- predict(pcr_cv, wine_test_x, ncomp=12)
+mean((pcr_all-wine_test_y)^2)
+pcr_9 <- predict(pcr_cv, wine_test_x, ncomp=9)
+mean((pcr_9-wine_test_y)^2)
+pcr_8 <- predict(pcr_cv, wine_test_x, ncomp=8)
+mean((pcr_8-wine_test_y)^2)
+```
+
+THE END.
